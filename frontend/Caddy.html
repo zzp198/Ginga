@@ -3,9 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>Caddy</title>
+    <!-- HTML -->
+    <link rel="stylesheet" href="/frontend/static/css/main.css">
+
 </head>
 <body>
+当前状态:{{ .state }}
 
+<label>
+    <textarea>{{ .caddyfile }}</textarea>
+</label>
 
+<script src="/frontend/static/js/main.js"></script>
 </body>
 </html>
