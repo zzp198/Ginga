@@ -23,13 +23,10 @@ func main() {
 	r.StaticFS("/frontend", http.FS(subfs))
 
 	r.GET("/Caddy/Start", func(c *gin.Context) {
-		cmd := exec.Command("Caddy/Caddy", "start")
+		cmd := exec.Command("./Caddy/Caddy", "start", "--config", "Caddy/Caddyfile")
+		cmd.WaitDelay = 10 * time.Second
 
-		msg, err := cmd.CombinedOutput()
-		if err != nil {
-			c.String(http.StatusOK, err.Error())
-			return
-		}
+		msg, _ := cmd.CombinedOutput()
 
 		c.String(http.StatusOK, string(msg))
 	})
@@ -38,11 +35,7 @@ func main() {
 		cmd := exec.Command("Caddy/Caddy", "stop")
 		cmd.WaitDelay = 10 * time.Second
 
-		msg, err := cmd.CombinedOutput()
-		if err != nil {
-			c.String(http.StatusOK, err.Error())
-			return
-		}
+		msg, _ := cmd.CombinedOutput()
 
 		c.String(http.StatusOK, string(msg))
 	})
