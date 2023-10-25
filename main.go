@@ -2,60 +2,60 @@ package main
 
 import (
 	"embed"
+	"flag"
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"html/template"
 	"io/fs"
 	"net/http"
-	"os"
-	"os/exec"
-	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 //go:embed frontend/* frontend/static/**/*
 var StaticFS embed.FS
 
 func main() {
+
+	ip := flag.String("ip", "0.0.0.0:8080", "")
+
 	r := gin.Default()
 
-	r.SetHTMLTemplate(template.Must(template.New("").ParseFS(StaticFS, "frontend/*.html")))
+	r.LoadHTMLFiles("../frontend/*.html")
 
-	subfs, _ := fs.Sub(StaticFS, "frontend")
-	r.StaticFS("/frontend", http.FS(subfs))
+	frontend, _ := fs.Sub(StaticFS, "frontend")
+	r.StaticFS("/frontend", http.FS(frontend))
 
-	r.GET("/Caddy/Start", func(c *gin.Context) {
-		cmd := exec.Command("./Caddy/Caddy", "start", "--config", "Caddy/Caddyfile")
-		cmd.WaitDelay = 10 * time.Second
+	r.GET("/api", func(c *gin.Context) {
 
-		msg, _ := cmd.CombinedOutput()
-
-		c.String(http.StatusOK, string(msg))
-	})
-
-	r.GET("/Caddy/Stop", func(c *gin.Context) {
-		cmd := exec.Command("Caddy/Caddy", "stop")
-		cmd.WaitDelay = 10 * time.Second
-
-		msg, _ := cmd.CombinedOutput()
-
-		c.String(http.StatusOK, string(msg))
-	})
-
-	r.GET("/Caddy", func(c *gin.Context) {
-		cmd := exec.Command("Caddy/Caddy", "-v")
-
-		version, err := cmd.CombinedOutput()
-		if err != nil {
-			c.String(http.StatusOK, err.Error())
-			return
+		var upGrader = websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
 		}
 
-		fiel, err := os.ReadFile("Caddy/Caddyfile")
+		conn, err := upGrader.Upgrade(c.Writer, c.Request, nil)
+		if err != nil {
+			return
+		}
+		defer conn.Close()
 
-		c.HTML(http.StatusOK, "Caddy.html", gin.H{
-			"version":   string(version),
-			"caddyfile": string(fiel),
-		})
+		for {
+			_, msg, err := conn.ReadMessage()
+			if err != nil {
+				fmt.Println("Failed to read message: ", err)
+				break
+			}
+
+			fmt.Println("Received message: %s\n", string(msg))
+
+			err = conn.WriteMessage(websocket.TextMessage, msg)
+			if err != nil {
+				fmt.Println("Failed to write message: ", err)
+				break
+			}
+		}
+
 	})
 
-	r.Run(":8080")
+	_ = r.Run(*ip)
 }
