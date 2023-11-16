@@ -1,0 +1,16 @@
+listen: :443
+
+acme:
+  domains:
+    - free.zzp198.com
+  email: zzp198@163.com
+
+auth:
+  type: password
+  password: hysteria
+
+masquerade:
+  type: proxy
+  proxy:
+    url: https://www.bilibili.com
+    rewriteHost: true

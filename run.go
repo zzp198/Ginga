@@ -1,68 +1,62 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
+	"context"
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"io"
+	"log"
 	"net/http"
+	"os"
 	"os/exec"
+	"os/signal"
+	"syscall"
 )
 
-type CmdObject struct {
-	Cmd    exec.Cmd
-	Output bytes.Buffer
-}
-
+// Get -> api/:Param/?arg=Query -> PostForm
 func main() {
 
 	ip := flag.String("ip", "0.0.0.0:8080", "")
 
 	r := gin.Default()
 
-	// Get -> api/:Param/?arg=Query -> PostForm
-
 	api := r.Group("api")
 
-	tasks := make(map[string]*CmdObject)
+	tasks := make(map[string]*exec.Cmd)
 
 	api.GET("cron", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{})
 	})
+
 	api.GET("cron/add", func(c *gin.Context) {
 		id := c.Query("id")
 		arg := c.Query("arg")
 
-		tasks[id] = &CmdObject{
-			Cmd: *exec.Command("/bin/bash", "-c", arg),
+		// 避免僵尸进程,Start后需要Wait或Kill,或者父进程退出,子进程让init来Wait
+		if _, ok := tasks[id]; ok {
+			_ = tasks[id].Process.Kill()
 		}
 
-		tasks[id].Cmd.Stdout = &tasks[id].Output
-		tasks[id].Cmd.Stderr = &tasks[id].Output
-		reader := bufio.NewReader(&tasks[id].Output)
-		_ = tasks[id].Cmd.Start()
+		logf, _ := os.Create(fmt.Sprintf("log/%s.log", id))
+		tasks[id] = exec.Command("/bin/bash", "-c", arg)
+		tasks[id].Stdout = logf
+		tasks[id].Stderr = logf
 
-		go func() {
-			for {
-				line, err := reader.ReadString('\n')
-				if err != nil || err == io.EOF {
-					break
-				}
-				tasks[id].Output.WriteString(line)
-			}
-		}()
+		_ = tasks[id].Start()
+
 		c.String(http.StatusOK, "ok")
 	})
+
 	api.GET("cron/detail/:id", func(c *gin.Context) {
 		id := c.Param("id")
-		c.String(http.StatusOK, tasks[id].Output.String())
+		data, _ := os.ReadFile(fmt.Sprintf("log/%s.log", id))
+		c.String(http.StatusOK, string(data))
 	})
+
 	api.GET("cron/kill/:id", func(c *gin.Context) {
 		id := c.Param("id")
-		tasks[id].Cmd.Process.Kill()
+		_ = tasks[id].Process.Kill()
 		c.String(http.StatusOK, "ok")
 	})
 
@@ -101,5 +95,26 @@ func main() {
 		}
 	})
 
-	_ = r.Run(*ip)
+	server := &http.Server{
+		Addr:    *ip,
+		Handler: r,
+	}
+
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("L&S error: %s\n", err)
+		}
+	}()
+
+	down := make(chan os.Signal, 1)
+	signal.Notify(down, syscall.SIGINT, syscall.SIGTERM)
+	<-down
+
+	fmt.Println("Server is shutting down")
+
+	if err := server.Shutdown(context.Background()); err != nil {
+		log.Fatalf("Server shutdown error: %s\n", err)
+	}
+
+	fmt.Println("Server has stopped gracefully.")
 }

@@ -1,8 +1,8 @@
 SET CGO_ENABLED=0
 SET GOOS=linux
 SET GOARCH=amd64
-go build -ldflags="-s -w" -o Hrony/Hrony
+go build -ldflags="-s -w" -o Crond/Crond
 
-cd Hrony
-wsl pkill Hrony
-wsl ./Hrony
+cd Crond
+wsl pkill Crond
+wsl ./Crond
