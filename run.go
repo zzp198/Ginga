@@ -11,15 +11,30 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"runtime/debug"
+	"strings"
 	"syscall"
 )
 
-// Get -> api/:Param/?arg=Query -> PostForm
+// Get -> api/:[Param]/?arg=[Query] -> [PostForm]
 func main() {
-
 	ip := flag.String("ip", "0.0.0.0:8080", "")
+	if len(os.Args) > 1 {
+		if strings.ToUpper(os.Args[1]) == "DEBUG" {
+			fmt.Println(debug.ReadBuildInfo())
+			return
+		}
+		if strings.ToUpper(os.Args[1]) == "START" {
 
-	r := gin.Default()
+		}
+		if strings.ToUpper(os.Args[1]) == "STOP" {
+
+		}
+	}
+
+	//gin.SetMode(gin.ReleaseMode)
+	r := gin.New()
+	r.Use(gin.Logger(), gin.Recovery())
 
 	api := r.Group("api")
 
@@ -33,17 +48,14 @@ func main() {
 		id := c.Query("id")
 		arg := c.Query("arg")
 
-		// 避免僵尸进程,Start后需要Wait或Kill,或者父进程退出,子进程让init来Wait
-		if _, ok := tasks[id]; ok {
-			_ = tasks[id].Process.Kill()
-		}
-
 		logf, _ := os.Create(fmt.Sprintf("log/%s.log", id))
 		tasks[id] = exec.Command("/bin/bash", "-c", arg)
 		tasks[id].Stdout = logf
 		tasks[id].Stderr = logf
 
-		_ = tasks[id].Start()
+		go func() {
+			_ = tasks[id].Run()
+		}()
 
 		c.String(http.StatusOK, "ok")
 	})
@@ -57,12 +69,21 @@ func main() {
 	api.GET("cron/kill/:id", func(c *gin.Context) {
 		id := c.Param("id")
 		_ = tasks[id].Process.Kill()
+		_ = tasks[id].Wait()
 		c.String(http.StatusOK, "ok")
 	})
 
 	r.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hey!")
 	})
+
+	//var wsUpgrader = websocket.Upgrader{
+	//	ReadBufferSize:  1024,
+	//	WriteBufferSize: 1024,
+	//	CheckOrigin: func(r *http.Request) bool {
+	//		return true
+	//	},
+	//}
 
 	r.GET("/api", func(c *gin.Context) {
 		var upGrader = websocket.Upgrader{

@@ -1,8 +1,7 @@
 SET CGO_ENABLED=0
 SET GOOS=linux
 SET GOARCH=amd64
-go build -ldflags="-s -w" -o Crond/Crond
+go build -ldflags="-s -w" -o Crond
 
-cd Crond
-wsl pkill Crond
-wsl ./Crond
+wsl ./Crond debug
+wsl ./Crond start
