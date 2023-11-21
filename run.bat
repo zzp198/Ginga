@@ -3,5 +3,4 @@ SET GOOS=linux
 SET GOARCH=amd64
 go build -ldflags="-s -w" -o Crond
 
-wsl ./Crond debug
-wsl ./Crond start
+wsl ./Crond

@@ -2,34 +2,34 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
-	"runtime/debug"
 	"strings"
 	"syscall"
 )
 
-// Get -> api/:[Param]/?arg=[Query] -> [PostForm]
 func main() {
 	ip := flag.String("ip", "0.0.0.0:8080", "")
-	if len(os.Args) > 1 {
-		if strings.ToUpper(os.Args[1]) == "DEBUG" {
-			fmt.Println(debug.ReadBuildInfo())
-			return
-		}
-		if strings.ToUpper(os.Args[1]) == "START" {
+	flag.Parse()
 
+	if len(os.Args) > 1 && strings.ToLower(os.Args[1]) == "daemon" {
+		cmd := exec.Command(os.Args[0], os.Args[2:]...)
+		// 碰到的第一个坑,父进程结束时,会向子进程发送HUP,TERM指令,导致子进程无法存活.
+		// SysProcAttr.Setpgid设置为true,使子进程的进程组ID与其父进程不同.(KILL强杀也可以)
+		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+		if err := cmd.Start(); err != nil {
+			slog.Error(err.Error())
+		} else {
+			slog.Info(fmt.Sprintf("%s [PID] %d running...\n", os.Args[0], cmd.Process.Pid))
 		}
-		if strings.ToUpper(os.Args[1]) == "STOP" {
-
-		}
+		return
 	}
 
 	//gin.SetMode(gin.ReleaseMode)
@@ -40,8 +40,8 @@ func main() {
 
 	tasks := make(map[string]*exec.Cmd)
 
-	api.GET("cron", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{})
+	api.GET("quit", func(c *gin.Context) {
+		os.Exit(0)
 	})
 
 	api.GET("cron/add", func(c *gin.Context) {
@@ -77,53 +77,18 @@ func main() {
 		c.String(http.StatusOK, "Hey!")
 	})
 
-	//var wsUpgrader = websocket.Upgrader{
-	//	ReadBufferSize:  1024,
-	//	WriteBufferSize: 1024,
-	//	CheckOrigin: func(r *http.Request) bool {
-	//		return true
-	//	},
-	//}
-
-	r.GET("/api", func(c *gin.Context) {
-		var upGrader = websocket.Upgrader{
-			CheckOrigin: func(r *http.Request) bool {
-				return true
-			},
-		}
-
-		conn, err := upGrader.Upgrade(c.Writer, c.Request, nil)
-		if err != nil {
-			return
-		}
-		defer conn.Close()
-
-		for {
-			mt, msg, err := conn.ReadMessage()
-
-			if err != nil {
-				fmt.Println("Failed to read message: ", err)
-				break
-			}
-
-			fmt.Printf("Received message: %s\n", string(msg))
-
-			err = conn.WriteMessage(mt, msg)
-			if err != nil {
-				fmt.Println("Failed to write message: ", err)
-				break
-			}
-		}
+	srv := &http.Server{Addr: *ip, Handler: r}
+	srv.RegisterOnShutdown(func() {
+		slog.Info(fmt.Sprintf("Server is shutting down"))
 	})
 
-	server := &http.Server{
-		Addr:    *ip,
-		Handler: r,
-	}
-
 	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("L&S error: %s\n", err)
+		if err := srv.ListenAndServe(); err != nil {
+			if errors.Is(err, http.ErrServerClosed) {
+				slog.Warn(fmt.Sprintf("Server closed under request"))
+			} else {
+				slog.Error(err.Error())
+			}
 		}
 	}()
 
@@ -131,11 +96,9 @@ func main() {
 	signal.Notify(down, syscall.SIGINT, syscall.SIGTERM)
 	<-down
 
-	fmt.Println("Server is shutting down")
-
-	if err := server.Shutdown(context.Background()); err != nil {
-		log.Fatalf("Server shutdown error: %s\n", err)
+	if err := srv.Shutdown(context.Background()); err != nil {
+		slog.Error(err.Error())
 	}
 
-	fmt.Println("Server has stopped gracefully.")
+	slog.Info(fmt.Sprintf("Server has stopped gracefully."))
 }
