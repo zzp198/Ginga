@@ -11,7 +11,6 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
-	"strings"
 	"syscall"
 )
 
@@ -19,22 +18,22 @@ func main() {
 	ip := flag.String("ip", "0.0.0.0:8080", "")
 	flag.Parse()
 
-	if len(os.Args) > 1 && strings.ToLower(os.Args[1]) == "daemon" {
-		cmd := exec.Command(os.Args[0], os.Args[2:]...)
-		// 碰到的第一个坑,父进程结束时,会向子进程发送HUP,TERM指令,导致子进程无法存活.
-		// SysProcAttr.Setpgid设置为true,使子进程的进程组ID与其父进程不同.(KILL强杀也可以)
-		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-		if err := cmd.Start(); err != nil {
-			slog.Error(err.Error())
-		} else {
-			slog.Info(fmt.Sprintf("%s [PID] %d running...\n", os.Args[0], cmd.Process.Pid))
-		}
-		return
-	}
+	//if len(os.Args) > 1 && strings.ToLower(os.Args[1]) == "daemon" {
+	//	cmd := exec.Command(os.Args[0], append(os.Args[2:], "CronTag")...)
+	//	// 碰到的第一个坑,父进程结束时,会向子进程发送HUP,TERM指令,导致子进程会跟随父进程一块结束.
+	//	// SysProcAttr.Setpgid设置为true,使子进程的进程组ID与其父进程不同.(KILL强杀也可以)
+	//	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	//	if err := cmd.Start(); err != nil {
+	//		slog.Error(err.Error())
+	//	} else {
+	//		slog.Info(fmt.Sprintf("%s [PID] %d running...\n", os.Args[0], cmd.Process.Pid))
+	//	}
+	//	return
+	//}
 
 	//gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
-	r.Use(gin.Logger(), gin.Recovery())
+	r.Use(gin.Recovery(), gin.Logger())
 
 	api := r.Group("api")
 
