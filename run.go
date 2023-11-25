@@ -9,7 +9,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"os/exec"
 	"os/signal"
 	"syscall"
 )
@@ -35,45 +34,8 @@ func main() {
 	r := gin.New()
 	r.Use(gin.Recovery(), gin.Logger())
 
-	api := r.Group("api")
-
-	tasks := make(map[string]*exec.Cmd)
-
-	api.GET("quit", func(c *gin.Context) {
-		os.Exit(0)
-	})
-
-	api.GET("cron/add", func(c *gin.Context) {
-		id := c.Query("id")
-		arg := c.Query("arg")
-
-		logf, _ := os.Create(fmt.Sprintf("log/%s.log", id))
-		tasks[id] = exec.Command("/bin/bash", "-c", arg)
-		tasks[id].Stdout = logf
-		tasks[id].Stderr = logf
-
-		go func() {
-			_ = tasks[id].Run()
-		}()
-
-		c.String(http.StatusOK, "ok")
-	})
-
-	api.GET("cron/detail/:id", func(c *gin.Context) {
-		id := c.Param("id")
-		data, _ := os.ReadFile(fmt.Sprintf("log/%s.log", id))
-		c.String(http.StatusOK, string(data))
-	})
-
-	api.GET("cron/kill/:id", func(c *gin.Context) {
-		id := c.Param("id")
-		_ = tasks[id].Process.Kill()
-		_ = tasks[id].Wait()
-		c.String(http.StatusOK, "ok")
-	})
-
-	r.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "Hey!")
+	r.GET("m3u8", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "m3u8.html", nil)
 	})
 
 	srv := &http.Server{Addr: *ip, Handler: r}
