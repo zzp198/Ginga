@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>123</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <iframe src='https://streamtape.com/e/yx4WWrr24Rt31w/' width="1024" height="600" allowfullscreen allowtransparency></iframe>
+</div>
+
+<script>
+    const {createApp, ref} = Vue
+
+    createApp({
+        setup() {
+            const message = ref()
+            return {
+                message
+            }
+        }
+    }).mount('#app')
+</script>
+
+</body>
+</html>
