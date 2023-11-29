@@ -2,7 +2,11 @@ SET CGO_ENABLED=0
 SET GOOS=linux
 SET GOARCH=amd64
 
-go build -ldflags="-s -w" -o Crond/Crond
+SET name=Crond
 
-@REM ssh root@223.240.111.27
-scp.exe Crond/Crond root@223.240.111.27:/root/Crond
+go build -ldflags="-s -w" -o %name%
+
+SSH root@223.240.111.27 "pkill %name%"
+SCP %name% root@223.240.111.27:
+DEL %name%
+SSH root@223.240.111.27 "chmod +x %name% && ./%name%"
