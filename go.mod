@@ -2,7 +2,10 @@ module github.com/zzp198/Crond
 
 go 1.21
 
-require github.com/gin-gonic/gin v1.9.1
+require (
+	github.com/gin-gonic/gin v1.9.1
+	github.com/yapingcat/gomedia v0.0.0-20231111085550-145f641a02d1
+)
 
 require (
 	github.com/bytedance/sonic v1.9.1 // indirect
