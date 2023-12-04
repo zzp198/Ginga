@@ -17,10 +17,10 @@ import (
 	"strings"
 )
 
-func main() {
-
-	download("https://vip.lz-cdn5.com/20220328/1825_7132edf8/1200k/hls/index.m3u8", "ylxq.mp4")
-}
+//func main() {
+//
+//	download("https://vip.lz-cdn5.com/20220328/1825_7132edf8/1200k/hls/index.m3u8", "ylxq.mp4")
+//}
 
 func download(rawUrl, name string) (bool, error) {
 	dir := rawUrl[:strings.LastIndex(rawUrl, "/")]

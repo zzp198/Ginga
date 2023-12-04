@@ -1,4 +1,4 @@
-module github.com/zzp198/Crond
+module github.com/zzp198/Ginga
 
 go 1.21
 
