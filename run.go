@@ -16,6 +16,8 @@ import (
 	"time"
 )
 
+var Cmds = make(map[string]*exec.Cmd)
+
 func main() {
 	ip := flag.String("ip", "0.0.0.0:5200", "")
 	flag.Parse()
@@ -55,9 +57,38 @@ func main() {
 	}
 	defer lock.Close()
 
+	HysteriaInit()
+
 	//gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 	r.Use(gin.Recovery(), gin.Logger())
+
+	r.GET("/hy2", func(c *gin.Context) {
+		isrun := true
+
+		if Cmds["Hysteria"] == nil || Cmds["Hysteria"].ProcessState != nil && Cmds["Hysteria"].ProcessState.Exited() || Cmds["Hysteria"].Process == nil {
+			isrun = false
+		}
+
+		config := HysteriaGetConfig()
+		logcont := HysteriaLog()
+
+		c.String(http.StatusOK, fmt.Sprintf("%t\n%s\n%s", isrun, config, logcont))
+	})
+
+	r.GET("/hy2/start", func(c *gin.Context) {
+		e := HysteriaStart()
+		if e != nil {
+			c.String(http.StatusOK, e.Error())
+			return
+		}
+		c.String(http.StatusOK, "ok")
+	})
+
+	r.GET("/hy2/stop", func(c *gin.Context) {
+		HysteriaStop()
+		c.String(http.StatusOK, "ok")
+	})
 
 	r.GET("/chunked", func(c *gin.Context) {
 
@@ -100,4 +131,41 @@ func main() {
 		log.Println(err)
 	}
 	log.Println("Server has stopped gracefully.")
+}
+
+func HysteriaInit() {
+	path := "data/Hysteria/hysteria-linux-amd64"
+
+	os.Chmod(path, 0777)
+
+	Cmds["Hysteria"] = exec.Command(path, "server", "-c", "data/Hysteria/config.yaml")
+
+	lf, _ := os.Create("data/Hysteria/Hysteria.log")
+	Cmds["Hysteria"].ExtraFiles = []*os.File{lf}
+
+	Cmds["Hysteria"].Stdout = Cmds["Hysteria"].ExtraFiles[0]
+	Cmds["Hysteria"].Stderr = Cmds["Hysteria"].ExtraFiles[0]
+}
+
+func HysteriaGetConfig() string {
+	data, _ := os.ReadFile("data/Hysteria/config.yaml")
+	return string(data)
+}
+
+func HysteriaSetConfig(config string) {
+	_ = os.WriteFile("data/Hysteria/config.yaml", []byte(config), 0644)
+}
+
+func HysteriaLog() string {
+	data, _ := os.ReadFile("data/Hysteria/Hysteria.log")
+	return string(data)
+}
+
+func HysteriaStart() error {
+	return Cmds["Hysteria"].Start()
+}
+
+func HysteriaStop() {
+	Cmds["Hysteria"].Process.Release()
+	Cmds["Hysteria"].Wait()
 }

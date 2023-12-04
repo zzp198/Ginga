@@ -1,0 +1,16 @@
+listen: :443
+
+acme:
+  domains:
+    - free.zzp198.com
+  email: admin@admin.com
+
+auth:
+  type: password
+  password: 123456
+
+masquerade:
+  type: proxy
+  proxy:
+    url: https://www.bilibili.com/
+    rewriteHost: true
