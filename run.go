@@ -169,3 +169,15 @@ func HysteriaStop() {
 	Cmds["Hysteria"].Process.Release()
 	Cmds["Hysteria"].Wait()
 }
+
+func IsProcessRunning(c *exec.Cmd) bool {
+	if c.Process != nil && c.ProcessState == nil {
+		return true
+	}
+	return false
+}
+
+func GetResult() {
+	//	https://api.streamtape.com
+	//ftp.streamtape.com
+}
