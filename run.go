@@ -48,5 +48,7 @@ func main() {
 		c.String(http.StatusOK, msg)
 	})
 
+	web.GET("")
+
 	_ = web.Run(":80")
 }
