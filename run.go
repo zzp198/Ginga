@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/shirou/gopsutil/v4/mem"
 	"github.com/tidwall/gjson"
 	"net/http"
 	"zzp198/Ginga/util"
@@ -18,7 +19,7 @@ func main() {
 
 		view_request, err := util.HttpGet("https://api.bilibili.com/x/web-interface/view?bvid=" + bv)
 		if err != nil {
-			c.String(200, err.Error())
+			c.String(http.StatusBadRequest, err.Error())
 		}
 
 		r1 := gjson.GetMany(view_request, "data.aid", "data.cid")
@@ -31,13 +32,20 @@ func main() {
 
 		play_request, err := util.HttpGet(url)
 		if err != nil {
-			c.String(200, err.Error())
+			c.String(http.StatusBadRequest, err.Error())
 		}
 
 		fmt.Println(play_request)
 		real_url := gjson.Get(play_request, "data.durl.0.url").String()
 
 		c.Redirect(http.StatusFound, real_url)
+	})
+
+	web.GET("/os_stat/", func(c *gin.Context) {
+		v, _ := mem.VirtualMemory()
+
+		msg := fmt.Sprintf("Total: %s, Used:%s, UsedPercent:%f%%\n", util.FormatByte(v.Total), util.FormatByte(v.Used), v.UsedPercent)
+		c.String(http.StatusOK, msg)
 	})
 
 	_ = web.Run(":80")
