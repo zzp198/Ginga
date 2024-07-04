@@ -5,11 +5,30 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/v4/mem"
 	"github.com/tidwall/gjson"
+	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 	"net/http"
 	"zzp198/Ginga/util"
 )
 
+type ServerInfo struct {
+	gorm.Model
+	Ip       string
+	Username string
+	Password string
+	Key      string
+	ViewTime int
+}
+
 func main() {
+
+	db := SqliteConn()
+
+	err := db.AutoMigrate(&ServerInfo{})
+	if err != nil {
+		panic(err)
+	}
 
 	web := gin.Default()
 
@@ -48,7 +67,36 @@ func main() {
 		c.String(http.StatusOK, msg)
 	})
 
-	web.GET("")
+	web.GET("/server/", func(c *gin.Context) {
+		var results []ServerInfo
+
+		db.Find(&results)
+
+		var msg string
+		for _, product := range results {
+			msg += fmt.Sprintf("IP: %s, USER: %s, PASS: %s\n", product.Ip, product.Username, product.Password)
+		}
+
+		c.String(200, msg)
+	})
 
 	_ = web.Run(":80")
+}
+
+func SqliteConn() *gorm.DB {
+	db, err := gorm.Open(sqlite.Open("ginga.db"), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+	return db
+}
+
+func MysqlConn(host, port, user, pass, dbname string) *gorm.DB {
+	dsn := "%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local"
+
+	db, err := gorm.Open(mysql.Open(fmt.Sprintf(dsn, user, pass, host, port, dbname)), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+	return db
 }
