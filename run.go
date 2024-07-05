@@ -22,9 +22,27 @@ type ServerInfo struct {
 	ViewTime int
 }
 
-func main() {
-	ip := flag.String("ip", ":8080", "ip address")
+var ip *string
+var key *string
 
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		//if token == "" {
+		//	c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization token is required"})
+		//	c.Abort()
+		//	return
+		//}
+
+		// TODO Check Token
+
+		c.Next()
+	}
+}
+
+func main() {
+	ip = flag.String("ip", ":8080", "ip address")
+	key = flag.String("key", "123456", "key")
 	flag.Parse()
 
 	db := SqliteConn()
@@ -34,17 +52,14 @@ func main() {
 		panic(err)
 	}
 
-	ModernW := gin.Default()
+	r := gin.Default()
+	r.Use(AuthMiddleware())
 
-	ModernW.GET("/", func(c *gin.Context) {
-
-	})
-
-	ModernW.GET("/", func(c *gin.Context) {
+	r.GET("/", func(c *gin.Context) {
 
 	})
 
-	ModernW.GET("/bili/:bv", func(c *gin.Context) {
+	r.GET("/bili/:bv", func(c *gin.Context) {
 
 		bv := c.Param("bv")
 
@@ -72,7 +87,7 @@ func main() {
 		c.Redirect(http.StatusFound, real_url)
 	})
 
-	ModernW.GET("/api/os_stat/", func(c *gin.Context) {
+	r.GET("/api/os_stat/", func(c *gin.Context) {
 		v, _ := mem.VirtualMemory()
 
 		c.JSON(http.StatusOK, gin.H{
@@ -82,7 +97,7 @@ func main() {
 		})
 	})
 
-	ModernW.GET("/server/", func(c *gin.Context) {
+	r.GET("/server/", func(c *gin.Context) {
 		var results []ServerInfo
 
 		db.Find(&results)
@@ -95,7 +110,7 @@ func main() {
 		c.String(200, msg)
 	})
 
-	_ = ModernW.Run(*ip)
+	_ = r.Run(*ip)
 }
 
 func SqliteConn() *gorm.DB {
