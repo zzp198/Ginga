@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/v4/mem"
@@ -13,7 +14,7 @@ import (
 )
 
 type ServerInfo struct {
-	gorm.Model
+	ID       uint `gorm:"primarykey"`
 	Ip       string
 	Username string
 	Password string
@@ -22,6 +23,9 @@ type ServerInfo struct {
 }
 
 func main() {
+	ip := flag.String("ip", ":8080", "ip address")
+
+	flag.Parse()
 
 	db := SqliteConn()
 
@@ -60,11 +64,14 @@ func main() {
 		c.Redirect(http.StatusFound, real_url)
 	})
 
-	web.GET("/os_stat/", func(c *gin.Context) {
+	web.GET("/api/os_stat/", func(c *gin.Context) {
 		v, _ := mem.VirtualMemory()
 
-		msg := fmt.Sprintf("Total: %s, Used:%s, UsedPercent:%f%%\n", util.FormatByte(v.Total), util.FormatByte(v.Used), v.UsedPercent)
-		c.String(http.StatusOK, msg)
+		c.JSON(http.StatusOK, gin.H{
+			"Total":       util.FormatByte(v.Total),
+			"Used":        util.FormatByte(v.Used),
+			"UsedPercent": v.UsedPercent,
+		})
 	})
 
 	web.GET("/server/", func(c *gin.Context) {
@@ -80,7 +87,7 @@ func main() {
 		c.String(200, msg)
 	})
 
-	_ = web.Run(":80")
+	_ = web.Run(*ip)
 }
 
 func SqliteConn() *gorm.DB {
