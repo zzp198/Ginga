@@ -34,9 +34,17 @@ func main() {
 		panic(err)
 	}
 
-	web := gin.Default()
+	ModernW := gin.Default()
 
-	web.GET("/bili/:bv", func(c *gin.Context) {
+	ModernW.GET("/", func(c *gin.Context) {
+
+	})
+
+	ModernW.GET("/", func(c *gin.Context) {
+
+	})
+
+	ModernW.GET("/bili/:bv", func(c *gin.Context) {
 
 		bv := c.Param("bv")
 
@@ -64,7 +72,7 @@ func main() {
 		c.Redirect(http.StatusFound, real_url)
 	})
 
-	web.GET("/api/os_stat/", func(c *gin.Context) {
+	ModernW.GET("/api/os_stat/", func(c *gin.Context) {
 		v, _ := mem.VirtualMemory()
 
 		c.JSON(http.StatusOK, gin.H{
@@ -74,7 +82,7 @@ func main() {
 		})
 	})
 
-	web.GET("/server/", func(c *gin.Context) {
+	ModernW.GET("/server/", func(c *gin.Context) {
 		var results []ServerInfo
 
 		db.Find(&results)
@@ -87,7 +95,7 @@ func main() {
 		c.String(200, msg)
 	})
 
-	_ = web.Run(*ip)
+	_ = ModernW.Run(*ip)
 }
 
 func SqliteConn() *gorm.DB {
@@ -106,4 +114,5 @@ func MysqlConn(host, port, user, pass, dbname string) *gorm.DB {
 		panic("failed to connect database")
 	}
 	return db
+
 }
