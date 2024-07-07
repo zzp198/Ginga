@@ -4,12 +4,17 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/robfig/cron/v3"
 	"github.com/shirou/gopsutil/v4/mem"
+	"github.com/shirou/gopsutil/v4/process"
 	"github.com/tidwall/gjson"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"net/http"
+	"os"
+	"runtime"
+	"time"
 	"zzp198/Ginga/util"
 )
 
@@ -22,8 +27,12 @@ type ServerInfo struct {
 	ViewTime int
 }
 
+type MemoryRecord struct {
+	UsedPercent float64
+	RecodeTime  int64
+}
+
 var ip *string
-var key *string
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -42,15 +51,27 @@ func AuthMiddleware() gin.HandlerFunc {
 
 func main() {
 	ip = flag.String("ip", ":8080", "ip address")
-	key = flag.String("key", "123456", "key")
 	flag.Parse()
 
 	db := SqliteConn()
 
-	err := db.AutoMigrate(&ServerInfo{})
+	err := db.AutoMigrate(&ServerInfo{}, &MemoryRecord{})
 	if err != nil {
 		panic(err)
 	}
+
+	c := cron.New()
+	_, _ = c.AddFunc("@every 1m", func() {
+		vm, err := mem.VirtualMemory()
+		if err != nil {
+		}
+
+		db.Create(&MemoryRecord{
+			UsedPercent: vm.UsedPercent,
+			RecodeTime:  time.Now().Unix(),
+		})
+	})
+	c.Start()
 
 	r := gin.Default()
 	r.Use(AuthMiddleware())
@@ -108,6 +129,35 @@ func main() {
 		}
 
 		c.String(200, msg)
+	})
+
+	r.GET("/api/self", func(c *gin.Context) {
+
+		var m runtime.MemStats
+		runtime.ReadMemStats(&m)
+
+		runtime.NumGoroutine()
+
+		pid := os.Getpid()
+		p, err := process.NewProcess(int32(pid))
+		if err != nil {
+			c.Abort()
+		}
+
+		meminfo, err := p.MemoryInfo()
+		if err != nil {
+			c.Abort()
+		}
+
+		c.JSON(200, gin.H{
+			"RSS":          util.FormatByte(meminfo.RSS * 8), // 常驻内存
+			"VMS":          util.FormatByte(meminfo.VMS * 8), // 虚拟内存
+			"Alloc":        util.FormatByte(m.Alloc * 8),
+			"TotalAlloc":   util.FormatByte(m.TotalAlloc * 8),
+			"Sys":          util.FormatByte(m.Sys * 8),
+			"NumGC":        m.NumGC,
+			"NumGoroutine": runtime.NumGoroutine(),
+		})
 	})
 
 	_ = r.Run(*ip)

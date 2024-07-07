@@ -3,7 +3,9 @@ module zzp198/Ginga
 go 1.22
 
 require (
+	github.com/gin-contrib/pprof v1.5.0
 	github.com/gin-gonic/gin v1.10.0
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/shirou/gopsutil/v4 v4.24.6
 	github.com/tidwall/gjson v1.17.1
 	gorm.io/driver/mysql v1.5.7
