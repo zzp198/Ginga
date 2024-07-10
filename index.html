@@ -1,0 +1,138 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="zh">-->
+<!--<head>-->
+<!--    <meta charset="utf-8"/>-->
+<!--    <title>Swiper demo</title>-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1"/>-->
+<!--    &lt;!&ndash; Link Swiper's CSS &ndash;&gt;-->
+<!--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css"/>-->
+
+<!--    &lt;!&ndash; Demo styles &ndash;&gt;-->
+<!--    <style>-->
+<!--        html,-->
+<!--        body {-->
+<!--            position: relative;-->
+<!--            height: 100%;-->
+<!--        }-->
+
+<!--        body {-->
+<!--            background: #eee;-->
+<!--            font-family: Helvetica Neue, Helvetica, Arial, sans-serif;-->
+<!--            font-size: 14px;-->
+<!--            color: #000;-->
+<!--            margin: 0;-->
+<!--            padding: 0;-->
+<!--        }-->
+
+<!--        .swiper {-->
+<!--            width: 100%;-->
+<!--            height: 100%;-->
+<!--        }-->
+
+<!--        .swiper-slide {-->
+<!--            text-align: center;-->
+<!--            font-size: 18px;-->
+<!--            background: #fff;-->
+<!--            display: flex;-->
+<!--            justify-content: center;-->
+<!--            align-items: center;-->
+<!--        }-->
+
+<!--        .swiper-slide img {-->
+<!--            display: block;-->
+<!--            width: 100%;-->
+<!--            height: 100%;-->
+<!--            object-fit: cover;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+
+<!--<body>-->
+
+<!--&lt;!&ndash; Slider main container &ndash;&gt;-->
+<!--<div class="swiper mySwiper1">-->
+
+<!--    &lt;!&ndash; Additional required wrapper &ndash;&gt;-->
+<!--    <div class="swiper-wrapper">-->
+
+<!--        &lt;!&ndash; Slides &ndash;&gt;-->
+<!--        <div class="swiper-slide">Slide 1</div>-->
+<!--        <div class="swiper-slide">Slide 2</div>-->
+<!--        <div class="swiper-slide">Slide 3</div>-->
+<!--        <div class="swiper-slide">-->
+
+<!--            &lt;!&ndash;嵌套Swiper&ndash;&gt;-->
+<!--            <div class="swiper mySwiper2">-->
+
+<!--                &lt;!&ndash; Additional required wrapper &ndash;&gt;-->
+<!--                <div class="swiper-wrapper">-->
+<!--                    &lt;!&ndash; Slides &ndash;&gt;-->
+<!--                    <div class="swiper-slide" style="overflow: scroll">Slide Super</div>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; If we need scrollbar &ndash;&gt;-->
+<!--                <div class="swiper-scrollbar"></div>-->
+
+<!--            </div>-->
+
+<!--        </div>-->
+
+<!--    </div>-->
+
+<!--    &lt;!&ndash; If we need pagination &ndash;&gt;-->
+<!--    <div class="swiper-pagination"></div>-->
+
+<!--</div>-->
+
+
+<!--&lt;!&ndash; Swiper JS &ndash;&gt;-->
+<!--<script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>-->
+
+<!--&lt;!&ndash; Initialize Swiper &ndash;&gt;-->
+<!--<script>-->
+<!--    var mySwiper1 = new Swiper(".mySwiper1", {-->
+<!--        direction: "vertical",-->
+<!--        mousewheel: true,-->
+<!--        pagination: {-->
+<!--            el: ".swiper-pagination",-->
+<!--            clickable: true,-->
+<!--        },-->
+<!--        on: {-->
+<!--            slideChange: function () {-->
+<!--                if (this.isEnd) {-->
+<!--                    mySwiper2.mousewheel.disable();-->
+<!--                    setTimeout(function () {-->
+<!--                        mySwiper2.mousewheel.enable()-->
+<!--                    }, 300);-->
+<!--                }-->
+<!--            }-->
+<!--        }-->
+<!--    });-->
+
+<!--    var record = -1;-->
+
+<!--    var mySwiper2 = new Swiper(".mySwiper2", {-->
+<!--        direction: "vertical",-->
+<!--        nested: true,-->
+<!--        freeMode: true,-->
+<!--        slidesPerView: "auto",-->
+<!--        mousewheel: true,-->
+<!--        scrollbar: {-->
+<!--            el: ".swiper-scrollbar",-->
+<!--            draggable: true,-->
+<!--        },-->
+<!--        on: {-->
+<!--            progress: function (swiper, progress) {-->
+<!--                if ((progress === 0 || progress === -0 || progress === 1) && record !== progress) {-->
+<!--                    mySwiper1.mousewheel.disable();-->
+<!--                    setTimeout(function () {-->
+<!--                        mySwiper1.mousewheel.enable()-->
+<!--                    }, 300);-->
+<!--                }-->
+<!--                record = progress;-->
+<!--            }-->
+<!--        }-->
+<!--    });-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->

@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
 	"github.com/shirou/gopsutil/v4/mem"
+	"github.com/shirou/gopsutil/v4/net"
 	"github.com/shirou/gopsutil/v4/process"
 	"github.com/tidwall/gjson"
 	"gorm.io/driver/mysql"
@@ -113,7 +114,7 @@ func main() {
 
 		c.JSON(http.StatusOK, gin.H{
 			"Total":       util.FormatByte(v.Total),
-			"Used":        util.FormatByte(v.Used),
+			"Available":   util.FormatByte(v.Available),
 			"UsedPercent": v.UsedPercent,
 		})
 	})
@@ -158,6 +159,22 @@ func main() {
 			"NumGC":        m.NumGC,
 			"NumGoroutine": runtime.NumGoroutine(),
 		})
+	})
+
+	r.GET("/api/cpu", func(c *gin.Context) {
+		var results []MemoryRecord
+		db.Order("recode_time DESC").Limit(10).Find(&results)
+		c.JSON(200, results)
+	})
+
+	r.GET("api/net", func(c *gin.Context) {
+
+		netstat, err := net.IOCounters(false)
+		if err != nil {
+			c.Abort()
+		}
+
+		c.JSON(200, netstat)
 	})
 
 	_ = r.Run(*ip)
