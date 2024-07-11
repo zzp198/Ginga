@@ -169,12 +169,28 @@ func main() {
 
 	r.GET("api/net", func(c *gin.Context) {
 
-		netstat, err := net.IOCounters(false)
-		if err != nil {
+		now1 := time.Now()
+		netstat1, err := net.IOCounters(false)
+		if err != nil || len(netstat1) < 1 {
 			c.Abort()
 		}
 
-		c.JSON(200, netstat)
+		time.Sleep(1 * time.Second)
+
+		now2 := time.Now()
+		netstat2, err := net.IOCounters(false)
+		if err != nil || len(netstat2) < 1 {
+			c.Abort()
+		}
+
+		seconds := now2.Sub(now1).Seconds()
+		up := float64(netstat2[0].BytesSent-netstat1[0].BytesSent) / seconds
+		down := float64(netstat2[0].BytesRecv-netstat1[0].BytesRecv) / seconds
+
+		c.JSON(200, gin.H{
+			"up":   util.FormatByte(uint64(up * 8)),
+			"down": util.FormatByte(uint64(down * 8)),
+		})
 	})
 
 	_ = r.Run(*ip)

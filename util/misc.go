@@ -22,13 +22,13 @@ func FormatByte(b uint64) string {
 		value = float64(b) / GB
 		unit = "GB"
 	case b >= MB:
-		value = float64(b) / GB
+		value = float64(b) / MB
 		unit = "MB"
 	case b >= KB:
-		value = float64(b) / GB
+		value = float64(b) / KB
 		unit = "KB"
 	case b >= B:
-		value = float64(b) / GB
+		value = float64(b) / B
 		unit = "B"
 	default:
 		value = float64(b)
