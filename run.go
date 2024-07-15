@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
+	"github.com/shirou/gopsutil/v4/load"
 	"github.com/shirou/gopsutil/v4/mem"
 	"github.com/shirou/gopsutil/v4/net"
 	"github.com/shirou/gopsutil/v4/process"
@@ -113,8 +115,8 @@ func main() {
 		v, _ := mem.VirtualMemory()
 
 		c.JSON(http.StatusOK, gin.H{
-			"Total":       util.FormatByte(v.Total),
-			"Available":   util.FormatByte(v.Available),
+			"Total":       util.FormatBit(v.Total),
+			"Available":   util.FormatBit(v.Available),
 			"UsedPercent": v.UsedPercent,
 		})
 	})
@@ -151,11 +153,11 @@ func main() {
 		}
 
 		c.JSON(200, gin.H{
-			"RSS":          util.FormatByte(meminfo.RSS * 8), // 常驻内存
-			"VMS":          util.FormatByte(meminfo.VMS * 8), // 虚拟内存
-			"Alloc":        util.FormatByte(m.Alloc * 8),
-			"TotalAlloc":   util.FormatByte(m.TotalAlloc * 8),
-			"Sys":          util.FormatByte(m.Sys * 8),
+			"RSS":          util.FormatBit(meminfo.RSS * 8), // 常驻内存
+			"VMS":          util.FormatBit(meminfo.VMS * 8), // 虚拟内存
+			"Alloc":        util.FormatBit(m.Alloc * 8),
+			"TotalAlloc":   util.FormatBit(m.TotalAlloc * 8),
+			"Sys":          util.FormatBit(m.Sys * 8),
 			"NumGC":        m.NumGC,
 			"NumGoroutine": runtime.NumGoroutine(),
 		})
@@ -188,8 +190,38 @@ func main() {
 		down := float64(netstat2[0].BytesRecv-netstat1[0].BytesRecv) / seconds
 
 		c.JSON(200, gin.H{
-			"up":   util.FormatByte(uint64(up * 8)),
-			"down": util.FormatByte(uint64(down * 8)),
+			"up":   util.FormatBit(uint64(up * 8)),
+			"down": util.FormatBit(uint64(down * 8)),
+		})
+	})
+
+	r.GET("api/xrayv", func(c *gin.Context) {
+
+		rbody, err := util.HttpGet("https://api.github.com/repos/XTLS/Xray-core/releases")
+		if err != nil {
+			c.Abort()
+		}
+
+		var tags []struct {
+			Tag string `json:"tag_name"`
+		}
+
+		json.Unmarshal([]byte(rbody), &tags)
+
+		c.JSON(200, tags)
+	})
+
+	r.GET("api/load", func(c *gin.Context) {
+
+		stst, err := load.Avg()
+		if err != nil {
+			c.Abort()
+		}
+
+		c.JSON(200, gin.H{
+			"avg1":  stst.Load1,
+			"avg5":  stst.Load5,
+			"avg15": stst.Load15,
 		})
 	})
 

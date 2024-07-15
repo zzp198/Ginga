@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func FormatByte(b uint64) string {
+func FormatBit(b uint64) string {
 	const (
 		B = 1 << (10 * iota)
 		KB
@@ -27,11 +27,8 @@ func FormatByte(b uint64) string {
 	case b >= KB:
 		value = float64(b) / KB
 		unit = "KB"
-	case b >= B:
-		value = float64(b) / B
-		unit = "B"
 	default:
-		value = float64(b)
+		value = float64(b) / B
 		unit = "B"
 	}
 
