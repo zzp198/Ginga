@@ -52,6 +52,8 @@ func main() {
 		}
 		defer file.Close()
 
+		os.Mkdir("caddy", 0755)
+
 		// 提取到指定的目录
 		err = extractTarGz(file, "caddy")
 		if err != nil {
