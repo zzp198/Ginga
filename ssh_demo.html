@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebSSH with xterm.js</title>
-    <link rel="stylesheet" href="https://unpkg.com/xterm/css/xterm.css" />
+    <link rel="stylesheet" href="https://unpkg.com/xterm/css/xterm.css"/>
     <style>
         body {
             margin: 0;
@@ -15,6 +15,7 @@
             align-items: center;
             background-color: black;
         }
+
         #terminal-container {
             width: 80%;
             height: 80%;
@@ -31,7 +32,7 @@
 
 <script>
     const terminalContainer = document.getElementById('terminal-container');
-    const socket = new WebSocket('ws://localhost:8080/ssh'); // WebSSH 服务地址
+    const socket = new WebSocket('ws://localhost:8080/api/xterm'); // WebSSH 服务地址
 
     // 创建 xterm 实例
     const term = new Terminal();
