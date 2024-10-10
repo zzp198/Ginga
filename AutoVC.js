@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Auto VC
 // @namespace    http://tampermonkey.net/
-// @version      2024-10-09
+// @version      2024-10-10
 // @description  try to take over the world!
 // @author       Free Server
 // @match        https://free.vps.vc/create-vps
@@ -23,7 +23,7 @@
 
     // 自动优选地区和填表
     datacenter.size = datacenter.options.length;
-    if (datacenter.options.length == 1 && datacenter.options[0].text == "-select-") {
+    if (datacenter.options.length === 1 && datacenter.options[0].text === "-select-") {
         location.reload();
         return
     }
@@ -71,18 +71,28 @@
         elements[i].checked = true;
     }
 
-    // TODO 图片验证码获取焦点,这样进来输入答案直接点提交即可最大节省时间
-
+    // 图片验证码获取焦点,这样进来输入答案直接点提交即可最大节省时间
+    var result = document.getElementById("result");
+    if (result != null) {
+        result.focus();
+    }
 
     // 展示大约用时,别太嚣张
     var time = 2;
-    var btn = document.getElementById("create_btn");
+    var create_btn = document.getElementById("create_btn");
     setInterval(function () {
         time++;
-        btn.textContent = "大约用时: " + time;
+        create_btn.textContent = "大约用时: " + time;
     }, 1000);
 
-    // 自动点击hCaptcha,需要配合无障碍和--disable-web-security不然会出错,放到最后
+    // 页面上回车直接提交
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            create_btn.click();
+        }
+    })
+
+    // 自动点击hCaptcha, 注意:"需要配合无障碍cookie和--disable-web-security"不然会出错
     var hCaptcha = false;
     var id = 0;
     id = setInterval(function () {
