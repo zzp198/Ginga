@@ -85,22 +85,9 @@
         create_btn.textContent = "大约用时: " + time;
     }, 1000);
 
-    // 页面上回车直接提交
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            create_btn.click();
-        }
-    })
-
     // 自动点击hCaptcha, 注意:"需要配合无障碍cookie和--disable-web-security"不然会出错
-    var hCaptcha = false;
-    var id = 0;
-    id = setInterval(function () {
-        if (hCaptcha === true) {
-            clearInterval(id);
-            return
-        }
-
+    var hCaptchaID = 0;
+    hCaptchaID = setInterval(function () {
         var iframes = document.getElementsByTagName("iframe");
 
         for (var i = 0; i < iframes.length; i++) {
@@ -108,7 +95,7 @@
             var anchor = iframeDoc.querySelector("#anchor");
             if (anchor != null) {
                 anchor.click();
-                hCaptcha = true;
+                clearInterval(hCaptchaID);
             }
         }
     }, 100);
