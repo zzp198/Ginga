@@ -72,8 +72,8 @@
     setInterval(function () {
         time++;
         create_btn.textContent = "大约用时: " + time / 10.0 + "秒";
-        if (time >= 130) {
-            create_btn.click(); // 等待13秒自动提交，实际用时还要考虑加载和网络延迟，抢不抢的过看同行力度
+        if (time >= 120) {
+            create_btn.click(); // 等待12秒自动提交，实际用时还要考虑加载和网络延迟，抢不抢的过看同行力度
         }
     }, 100);
 
