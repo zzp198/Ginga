@@ -19,13 +19,13 @@ var upgrader = websocket.Upgrader{
 }
 
 func main() {
-	ip := flag.String("ip", "0.0.0.0:8080", "IP address")
+	ip := flag.String("ip", "0.0.0.0:8080", "")
 
 	flag.Parse()
 
-	r := gin.New()
+	r := gin.Default()
 
-	r.GET("/", func(c *gin.Context) {
+	r.GET("/xterm", func(c *gin.Context) {
 
 	})
 
@@ -38,32 +38,32 @@ func main() {
 		}
 		defer conn.Close()
 
-		addr, ok := c.GetQuery("addr")
-		if !ok {
-			c.JSON(500, gin.H{"error": "no addr"})
-			return
-		}
-
-		user, ok := c.GetQuery("user")
-		if !ok {
-			c.JSON(500, gin.H{"error": "no user"})
-			return
-		}
-
-		auth, ok := c.GetQuery("auth")
-		if !ok {
-			c.JSON(500, gin.H{"error": "no auth"})
-			return
-		}
+		//addr, ok := c.GetQuery("addr")
+		//if !ok {
+		//	c.JSON(500, gin.H{"error": "no addr"})
+		//	return
+		//}
+		//
+		//user, ok := c.GetQuery("user")
+		//if !ok {
+		//	c.JSON(500, gin.H{"error": "no user"})
+		//	return
+		//}
+		//
+		//auth, ok := c.GetQuery("auth")
+		//if !ok {
+		//	c.JSON(500, gin.H{"error": "no auth"})
+		//	return
+		//}
 
 		sshConfig := &ssh.ClientConfig{
-			User:            user,
-			Auth:            []ssh.AuthMethod{ssh.Password(auth)},
+			User:            "root",
+			Auth:            []ssh.AuthMethod{ssh.Password("258237")},
 			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 			Timeout:         10 * time.Minute,
 		}
 
-		sshConn, err := ssh.Dial("tcp", addr, sshConfig)
+		sshConn, err := ssh.Dial("tcp", "[2001:41d0:800:482:565f:2505:9913:9a20]:22", sshConfig)
 		if err != nil {
 			log.Println("Failed to connect to SSH server:", err)
 			c.JSON(200, gin.H{"error": "Failed to connect to SSH server"})

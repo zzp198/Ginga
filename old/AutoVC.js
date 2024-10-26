@@ -32,39 +32,28 @@
         datacenter.options[1].selected = true;
     }
 
-    var flag = false;
-    var i = 0;
-
-    for (i = 0; i < datacenter.options.length; i++) {
-        if (datacenter.options[i].text.includes("US1")) {
+    for (var i = 0; i < datacenter.options.length; i++) {
+        if (datacenter.options[i].text.includes("US") && !datacenter.options[i].text.includes("US4")) {
             datacenter.options[i].selected = true;
-            flag = true;
             break;
         }
-    }
-
-    if (!flag) {
-        for (i = 0; i < datacenter.options.length; i++) {
-            if (datacenter.options[i].text.includes("CA1")) {
-                datacenter.options[i].selected = true;
-                flag = true;
-                break;
-            }
+        if (datacenter.options[i].text.includes("CA1")) {
+            datacenter.options[i].selected = true;
+            break;
         }
-    }
-
-    if (!flag) {
-        for (i = 0; i < datacenter.options.length; i++) {
-            if (datacenter.options[i].text.includes("1")) {
-                datacenter.options[i].selected = true;
-                break;
-            }
+        if (datacenter.options[i].text.includes("EU1")) {
+            datacenter.options[i].selected = true;
+            break;
+        }
+        if (datacenter.options[i].text.includes("1")) {
+            datacenter.options[i].selected = true;
+            break;
         }
     }
 
     document.getElementById("os").value = 2;
     document.getElementById("password").value = 123456;
-    document.getElementById("purpose").value = 1;
+    document.getElementById("purpose").value = 2;
 
     var elements = document.getElementsByName('agreement[]');
     for (i = 0; i < elements.length; i++) {
@@ -77,27 +66,17 @@
         result.focus();
     }
 
-    // 展示大约用时,别太嚣张
-    var time = 2;
+    // 展示大约用时
+    var time = 0;
     var create_btn = document.getElementById("create_btn");
     setInterval(function () {
         time++;
-        create_btn.textContent = "大约用时: " + time;
-    }, 1000);
-
-    // 自动点击hCaptcha, 注意:"需要配合无障碍cookie和--disable-web-security"不然会出错
-    var hCaptchaID = 0;
-    hCaptchaID = setInterval(function () {
-        var iframes = document.getElementsByTagName("iframe");
-
-        for (var i = 0; i < iframes.length; i++) {
-            var iframeDoc = iframes[i].contentDocument || iframes[i].contentWindow.document;
-            var anchor = iframeDoc.querySelector("#anchor");
-            if (anchor != null) {
-                anchor.click();
-                clearInterval(hCaptchaID);
-            }
+        create_btn.textContent = "大约用时: " + time / 10.0 + "秒";
+        if (time >= 130) {
+            create_btn.click(); // 等待13秒自动提交，实际用时还要考虑加载和网络延迟，抢不抢的过看同行力度
         }
     }, 100);
+
+    // 自动点击hCaptcha,使用开发者扩展**NopeCHA**就行
 
 })();
