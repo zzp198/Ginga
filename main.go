@@ -3,14 +3,17 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
 	thirednet "github.com/shirou/gopsutil/net"
 	"io"
 	"net"
+	"net/http"
 	"net/mail"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -19,15 +22,25 @@ func main() {
 
 	//frontend.Server("")
 
-	//Web := gin.Default()
-	//
-	//Web.GET("/", func(c *gin.Context) {
-	//	c.String(http.StatusOK, "Hello World")
-	//})
+	Web := gin.Default()
 
-	//Web.Run(":80")
+	Web.GET("/events", func(c *gin.Context) {
+		c.Writer.Header().Set("Content-Type", "text/event-stream")
+		c.Writer.Header().Set("Cache-Control", "no-cache")
+		c.Writer.Header().Set("Connection", "keep-alive")
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 
-	MailServer()
+		for {
+			fmt.Fprintf(c.Writer, "data: %s\n\n", time.Now().Format(time.Stamp))
+			c.Writer.(http.Flusher).Flush()
+			time.Sleep(1 * time.Second)
+		}
+	})
+
+	Web.Run(":8080")
+
+	//MailServer()
+
 }
 
 func State() {
