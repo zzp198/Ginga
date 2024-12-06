@@ -176,3 +176,7 @@ func handleConnection(conn net.Conn) {
 	// 向客户端确认
 	fmt.Fprintf(conn, "250 OK\r\n")
 }
+
+func CleanExpiredEmails() {
+
+}
