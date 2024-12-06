@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
+	"github.com/shirou/gopsutil/host"
+	"github.com/shirou/gopsutil/load"
 	"github.com/shirou/gopsutil/mem"
 	thirednet "github.com/shirou/gopsutil/net"
 	"io"
@@ -17,8 +19,6 @@ import (
 )
 
 func main() {
-
-	//State()
 
 	//frontend.Server("")
 
@@ -37,6 +37,11 @@ func main() {
 		}
 	})
 
+	Web.GET("/state", func(c *gin.Context) {
+		State()
+		c.String(200, "")
+	})
+
 	Web.Run(":8080")
 
 	//MailServer()
@@ -49,9 +54,18 @@ func State() {
 	cpuInfo, _ := cpu.Info()
 	fmt.Println("CPU Info:", cpuInfo)
 
+	precents, _ := cpu.Percent(0, false)
+	fmt.Println("Precents:", precents)
+
+	uptime, _ := host.Uptime()
+	fmt.Println("Uptime:", uptime)
+
 	// 内存信息
 	memInfo, _ := mem.VirtualMemory()
 	fmt.Println("Memory Info:", memInfo)
+
+	swapInfo, _ := mem.SwapMemory()
+	fmt.Println("Swap Memory Info:", swapInfo)
 
 	// 磁盘信息
 	diskInfo, _ := disk.Usage("/")
@@ -61,6 +75,14 @@ func State() {
 	netInfo, _ := thirednet.Interfaces()
 	fmt.Println("Network Info:", netInfo)
 
+	avgState, _ := load.Avg()
+	fmt.Println("Load Average State:", avgState)
+
+	connState, _ := thirednet.Connections("all")
+	fmt.Println("connState:", connState, len(connState))
+
+	ioState, _ := thirednet.IOCounters(false)
+	fmt.Println("ioState:", ioState)
 }
 
 func MailServer() {
