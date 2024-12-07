@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func main() {
+func main1() {
 
 	fmt.Println("临时邮件服务器")
 	fmt.Println()
@@ -86,6 +86,40 @@ func Parse(conn net.Conn) {
 				//}
 				//
 				//fmt.Println(string(body))
+
+				//m, err := message.Read(strings.NewReader(data))
+				//if message.IsUnknownCharset(err) {
+				//	// This error is not fatal
+				//	fmt.Println("Unknown encoding:", err)
+				//	continue
+				//} else if err != nil {
+				//	fmt.Println("Error parsing message:", err)
+				//	continue
+				//}
+				//
+				//if mr := m.MultipartReader(); mr != nil {
+				//	// This is a multipart message
+				//	log.Println("This is a multipart message containing:")
+				//	for {
+				//		p, err := mr.NextPart()
+				//		if err == io.EOF {
+				//			break
+				//		} else if err != nil {
+				//			log.Fatal(err)
+				//		}
+				//
+				//		t, _, _ := p.Header.ContentType()
+				//		log.Println("A part with type", t)
+				//	}
+				//} else {
+				//	t, _, _ := m.Header.ContentType()
+				//	log.Println("This is a non-multipart message with type", t)
+				//
+				//	body, _ := io.ReadAll(m.Body)
+				//	fmt.Println(m.Header)
+				//	fmt.Println(string(body))
+				//}
+
 			} else {
 				data += line + "\n"
 			}
