@@ -20,6 +20,10 @@ import (
 
 func main() {
 
+}
+
+func main1() {
+
 	//frontend.Server("")
 
 	Web := gin.Default()
@@ -40,6 +44,10 @@ func main() {
 	Web.GET("/state", func(c *gin.Context) {
 		State()
 		c.String(200, "")
+	})
+
+	Web.GET("/load", func(c *gin.Context) {
+
 	})
 
 	Web.Run(":8080")
