@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"net/mail"
 	"strings"
 )
 
-func main1() {
+func main() {
 
 	fmt.Println("临时邮件服务器")
 	fmt.Println()
@@ -55,7 +54,7 @@ func Parse(conn net.Conn) {
 			break
 		}
 
-		line = strings.TrimSpace(line)
+		//line = strings.TrimSpace(line)
 		fmt.Println("C: " + line)
 
 		if readingBody {
@@ -67,59 +66,26 @@ func Parse(conn net.Conn) {
 				fmt.Println(data)
 				fmt.Println()
 
-				// 现在邮件发送时包含DKIM,net/mail不支持导致报错,还有各种转码问题
-				msg, err := mail.ReadMessage(strings.NewReader(data))
-				if err != nil {
-					fmt.Printf("Error parsing mail: %v\n", err)
-					return
-				}
-
-				for key, values := range msg.Header {
-					for _, value := range values {
-						fmt.Printf("%s: %s", key, value)
-					}
-				}
-
-				body, err := io.ReadAll(msg.Body)
-				if err != nil {
-					fmt.Printf("Error reading body: %v\n", err)
-					return
-				}
-
-				fmt.Println(string(body))
-
-				//m, err := message.Read(strings.NewReader(data))
-				//if message.IsUnknownCharset(err) {
-				//	// This error is not fatal
-				//	fmt.Println("Unknown encoding:", err)
-				//	continue
-				//} else if err != nil {
-				//	fmt.Println("Error parsing message:", err)
-				//	continue
+				//// 现在邮件发送时包含DKIM,net/mail不支持导致报错,还有各种转码问题,“\t代表换行内容”这样就好处理了
+				//msg, err := mail.ReadMessage(strings.NewReader(data))
+				//if err != nil {
+				//	fmt.Printf("Error parsing mail: %v\n", err)
+				//	return
 				//}
 				//
-				//if mr := m.MultipartReader(); mr != nil {
-				//	// This is a multipart message
-				//	log.Println("This is a multipart message containing:")
-				//	for {
-				//		p, err := mr.NextPart()
-				//		if err == io.EOF {
-				//			break
-				//		} else if err != nil {
-				//			log.Fatal(err)
-				//		}
-				//
-				//		t, _, _ := p.Header.ContentType()
-				//		log.Println("A part with type", t)
+				//for key, values := range msg.Header {
+				//	for _, value := range values {
+				//		fmt.Printf("%s: %s", key, value)
 				//	}
-				//} else {
-				//	t, _, _ := m.Header.ContentType()
-				//	log.Println("This is a non-multipart message with type", t)
-				//
-				//	body, _ := io.ReadAll(m.Body)
-				//	fmt.Println(m.Header)
-				//	fmt.Println(string(body))
 				//}
+				//
+				//body, err := io.ReadAll(msg.Body)
+				//if err != nil {
+				//	fmt.Printf("Error reading body: %v\n", err)
+				//	return
+				//}
+				//
+				//fmt.Println(string(body))
 
 			} else {
 				data += line + "\n"
