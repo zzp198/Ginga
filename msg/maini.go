@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/mail"
 	"strings"
 )
 
@@ -67,25 +68,25 @@ func Parse(conn net.Conn) {
 				fmt.Println()
 
 				// 现在邮件发送时包含DKIM,net/mail不支持导致报错,还有各种转码问题
-				//msg, err := mail.ReadMessage(strings.NewReader(data))
-				//if err != nil {
-				//	fmt.Printf("Error parsing mail: %v\n", err)
-				//	return
-				//}
-				//
-				//for key, values := range msg.Header {
-				//	for _, value := range values {
-				//		fmt.Printf("%s: %s", key, value)
-				//	}
-				//}
-				//
-				//body, err := io.ReadAll(msg.Body)
-				//if err != nil {
-				//	fmt.Printf("Error reading body: %v\n", err)
-				//	return
-				//}
-				//
-				//fmt.Println(string(body))
+				msg, err := mail.ReadMessage(strings.NewReader(data))
+				if err != nil {
+					fmt.Printf("Error parsing mail: %v\n", err)
+					return
+				}
+
+				for key, values := range msg.Header {
+					for _, value := range values {
+						fmt.Printf("%s: %s", key, value)
+					}
+				}
+
+				body, err := io.ReadAll(msg.Body)
+				if err != nil {
+					fmt.Printf("Error reading body: %v\n", err)
+					return
+				}
+
+				fmt.Println(string(body))
 
 				//m, err := message.Read(strings.NewReader(data))
 				//if message.IsUnknownCharset(err) {
