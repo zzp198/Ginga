@@ -67,7 +67,7 @@ func Process(conn net.Conn) (data string, err error) {
 		if reading {
 			if strings.TrimSpace(line) == "." {
 				reading = false
-				WriteString(w, "250 OK")
+				WriteString(w, "250 OK\r\n")
 			} else {
 				data += line
 			}
