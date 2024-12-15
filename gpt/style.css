@@ -1,0 +1,70 @@
+/* 全局样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    background-color: #f9f9f9;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+}
+
+.container {
+    width: 90%;
+    max-width: 800px;
+}
+
+/* 标题样式 */
+h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: #111;
+}
+
+/* 行样式 */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    flex: 1;
+    min-width: 150px;
+    margin: 0.5rem;
+}
+
+h2 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: #555;
+}
+
+.value {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #333;
+}
+
+/* 特殊样式 */
+.status {
+    color: green;
+    font-weight: bold;
+}
+
+.version {
+    font-size: 0.9rem;
+    color: #666;
+}

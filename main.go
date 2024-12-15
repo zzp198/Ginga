@@ -9,15 +9,10 @@ import (
 	"github.com/shirou/gopsutil/load"
 	"github.com/shirou/gopsutil/mem"
 	thirednet "github.com/shirou/gopsutil/net"
-	"net/http"
 	"time"
 )
 
 func main() {
-
-}
-
-func main1() {
 
 	//frontend.Server("")
 
@@ -31,7 +26,7 @@ func main1() {
 
 		for {
 			fmt.Fprintf(c.Writer, "data: %s\n\n", time.Now().Format(time.Stamp))
-			c.Writer.(http.Flusher).Flush()
+			c.Writer.Flush()
 			time.Sleep(1 * time.Second)
 		}
 	})
