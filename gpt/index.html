@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slideable Music Player</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        #music-player {
+            position: fixed;
+            bottom: 50px;
+            left: -250px; /* Initially hidden */
+            width: 300px;
+            background: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px 0 0 10px;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            z-index: 1000;
+            transition: left 0.3s ease-in-out;
+        }
+
+        #music-player header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 10px;
+            font-size: 16px;
+            font-weight: bold;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #music-player .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        #music-player .controls button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 0 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #music-player .controls button:hover {
+            background: #0056b3;
+        }
+
+        audio {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        #toggle-btn {
+            position: fixed;
+            bottom: 50px;
+            left: 0;
+            width: 30px;
+            height: 50px;
+            background: #007bff;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            z-index: 1001;
+            transition: left 0.3s ease-in-out;
+        }
+
+        #toggle-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div id="music-player">
+    <header>Music Player</header>
+    <audio id="audio" controls>
+        <source src="伴虎.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    <div class="controls">
+        <button id="play">Play</button>
+        <button id="pause">Pause</button>
+    </div>
+</div>
+
+<div id="toggle-btn">&gt;</div>
+
+<script>
+    const player = document.getElementById('music-player');
+    const toggleBtn = document.getElementById('toggle-btn');
+    const audio = document.getElementById('audio');
+    const playButton = document.getElementById('play');
+    const pauseButton = document.getElementById('pause');
+
+    let isVisible = false; // Track the visibility state
+
+    // Toggle button functionality
+    toggleBtn.addEventListener('click', () => {
+        isVisible = !isVisible;
+        if (isVisible) {
+            player.style.left = '0px'; // Show the player
+            toggleBtn.innerHTML = '&lt;'; // Change arrow to point left
+        } else {
+            player.style.left = '-250px'; // Hide the player
+            toggleBtn.innerHTML = '&gt;'; // Change arrow to point right
+        }
+    });
+
+    // Control buttons functionality
+    playButton.addEventListener('click', () => audio.play());
+    pauseButton.addEventListener('click', () => audio.pause());
+</script>
+</body>
+</html>
