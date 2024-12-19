@@ -1,87 +1,133 @@
 package main
 
 import (
-	"fmt"
+	"example/common"
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/process"
-	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
+	"time"
 )
+
+var jwt string
 
 func main() {
 
-	GetOnceInfo()
-	fmt.Println(getGPUInfo())
-	fmt.Println(getIPs())
-}
+	r := gin.Default()
 
-func StartServer() {
+	r.LoadHTMLGlob("resource/*")
 
-	g := gin.Default()
+	r.Use(func(c *gin.Context) {
+		if c.Request.URL.Path == "/" {
+			c.Next()
+		} else {
+			n, err := c.Cookie("jwt")
+			if err == nil && n == jwt {
+				c.Next()
+			} else {
+				c.Redirect(http.StatusTemporaryRedirect, "/")
+				c.Abort()
+			}
+		}
+	})
 
-	g.GET("/state/self", func(c *gin.Context) {
-		// 获取当前正在运行的 Goroutine 数量
-		numGoroutines := runtime.NumGoroutine()
-		// 获取操作系统的线程数
-		numCPU := runtime.NumCPU()
+	r.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", gin.H{})
+	})
 
-		fmt.Printf("当前 Goroutine 数量: %d\n", numGoroutines)
-		fmt.Printf("当前 CPU 核心数: %d\n", numCPU)
+	r.POST("/", func(c *gin.Context) {
+
+		username := c.PostForm("username")
+		password := c.PostForm("password")
+
+		if username == "admin" && password == "123456" {
+
+			jwt = time.Now().String()
+
+			c.SetCookie("jwt", jwt, 86400, "/", "", false, false)
+
+			// 返回 JSON 数据，表示登录成功
+			c.JSON(http.StatusOK, gin.H{
+				"status":  "ok",
+				"message": "登录成功",
+			})
+			return
+		}
+
+		// 登录失败，返回错误信息
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"status":  "error",
+			"message": "用户名或密码错误",
+		})
+	})
+
+	r.GET("/home", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "home.html", gin.H{})
+	})
+
+	r.GET("/api/info/static", func(c *gin.Context) {
+		hostInfo, err := host.Info()
+
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"code":  "-1",
+				"error": err.Error(),
+			})
+			return
+		}
 
 		p, err := process.NewProcess(int32(os.Getpid()))
 		if err != nil {
-			log.Fatal(err)
+			c.JSON(http.StatusOK, gin.H{
+				"code":  "-1",
+				"error": err.Error(),
+			})
+			return
 		}
 
 		// 获取进程的内存信息
 		memInfo, err := p.MemoryInfo()
 		if err != nil {
-			log.Fatal(err)
+			c.JSON(http.StatusOK, gin.H{
+				"code":  "-1",
+				"error": err.Error(),
+			})
+			return
 		}
-		fmt.Printf("Memory usage by current process: %v KB\n", memInfo.RSS/1024)
 
-		// 获取当前 Goroutine 数量
-		fmt.Printf("Goroutines: %d\n", runtime.NumGoroutine())
+		c.JSON(http.StatusOK, gin.H{
+			"code": "1",
+			"msg":  "ok",
+
+			"主机名":    hostInfo.Hostname,
+			"上线时间":   hostInfo.Uptime,
+			"操作系统":   hostInfo.Platform,
+			"系统版本":   hostInfo.PlatformVersion,
+			"内核数":    runtime.NumCPU(),
+			"协程数":    runtime.NumGoroutine(),
+			"物理内存占用": common.FormatByte(memInfo.RSS), // Resident Set Size
+		})
 	})
 
-	g.Run(":80")
-}
+	r.GET("/api/info/dynamic", func(c *gin.Context) {
+		cmd := exec.Command("curl", "-s", "https://ipinfo.io/ip")
+		output, err := cmd.Output()
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"code":  "-1",
+				"error": err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code": "1",
+			"ip":   strings.TrimSpace(string(output)),
+		})
+	})
 
-func GetOnceInfo() {
-
-	fmt.Println(host.Info())
-	//fmt.Println(host.SensorsTemperatures())
-	//fmt.Println(host.Users())
-
-}
-func getGPUInfo() string {
-	// 在Windows上获取GPU信息的方式依赖于使用的驱动程序
-	cmd := exec.Command("wmic", "path", "win32_videocontroller", "get", "caption")
-	output, err := cmd.Output()
-	if err != nil {
-		return "Unknown"
-	}
-	return strings.TrimSpace(string(output))
-}
-
-func getIPs() (string, string) {
-
-	var internalIP string
-
-	// 获取外网IP（使用公共API）
-	// 这里我们简单地调用一个公共API来获取外网IP
-	cmd := exec.Command("curl", "-s", "https://ipinfo.io/ip")
-	output, err := cmd.Output()
-	if err != nil {
-		return "Unknown", err.Error()
-	}
-	return internalIP, strings.TrimSpace(string(output))
-}
-
-func GetInfo() {
-
+	r.Run(":80")
 }

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Success Page with iziToast</title>
+
+  <!-- 引入 iziToast 的 CSS 和 JS -->
+  <link href="https://cdn.jsdelivr.net/npm/izitoast@1.4.0/dist/css/iziToast.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/izitoast@1.4.0/dist/js/iziToast.min.js"></script>
+</head>
+<body>
+<h1>欢迎来到成功页面！</h1>
+
+<script>
+  // 页面加载时，检查是否有提示信息
+  window.onload = function() {
+    const loginStatus = sessionStorage.getItem('loginStatus');
+    const message = sessionStorage.getItem('message');
+
+    // 如果 sessionStorage 中有提示信息
+    if (loginStatus && message) {
+      // 使用 iziToast 显示提示
+      if (loginStatus === 'success') {
+        iziToast.success({
+          title: 'Success',
+          message: message,
+          position: 'topRight',
+          timeout: 3000 // 3秒后自动消失
+        });
+      } else if (loginStatus === 'error') {
+        iziToast.error({
+          title: 'Error',
+          message: message,
+          position: 'topRight',
+          timeout: 3000 // 3秒后自动消失
+        });
+      }
+
+      // 提示显示后，清除 sessionStorage 中的数据
+      sessionStorage.removeItem('loginStatus');
+      sessionStorage.removeItem('message');
+    }
+  };
+</script>
+
+</body>
+</html>
