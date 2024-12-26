@@ -4,6 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/process"
+	"github.com/tidwall/gjson"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -62,5 +64,25 @@ func main() {
 		})
 	})
 
+	r.GET("/api/xray/versions", func(c *gin.Context) {
+		rp, err := http.Get("https://api.github.com/repos/XTLS/xray-core/releases")
+		if err != nil {
+			c.JSON(http.StatusOK, err)
+			return
+		}
+
+		b, err := io.ReadAll(rp.Body)
+		_ = rp.Body.Close()
+
+		var r []string
+		for _, name := range gjson.GetBytes(b, "#.tag_name").Array() {
+			r = append(r, name.String())
+		}
+		c.JSON(http.StatusOK, r)
+	})
+
+	r.GET("/api/xray/changeversion", func(c *gin.Context) {
+
+	})
 	_ = r.Run(":8880")
 }
